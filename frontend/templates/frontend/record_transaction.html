@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head><title>Record Transaction</title></head>
+<body>
+    <h2> Record Transaction</h2>
+    <form id="recordForm">
+        <input type="text" id="amount" placeholder="Amount" required autofocus><br><br>
+        <input type="text" id="description" placeholder="Description" required><br><br>
+        <label for="category">Select Category:</label>
+        <select name="selected_item" id="category">
+            <option value="" disabled selected>--- Select an Item ---</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select><br><br>
+        <label for="mode">Select Payment Mode:</label>
+        <select name="selected_item" id="mode">
+            <option value="" disabled selected>--- Select an Item ---</option>
+            {% for value, label in payment_modes %}
+            <option value="{{value }}">{{ label }}</option>
+            {% endfor %}
+        </select><br><br>
+        <label for="type">Select Transaction Type:</label>
+        <select name="selected_item" id="type">
+            <option value="" disabled selected>--- Select an Item ---</option>
+            {% for value, label in transaction_types %}
+            <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="text" id="date" placeholder="Date" required><br><br>
+        <button type="submit">Record</button>
+        
+    </form>
+    <a href="/dashboard"><button>Dashboard</button></a>
+    <p id="error-msg" style="color:red;"></p>
+
+    <script>
+         function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const accessToken = getCookie('access_token');
+        const amount_field = document.getElementById("amount");
+        const description_field = document.getElementById("description");
+        const category_field = document.getElementById("category");
+        const type_field = document.getElementById("type");
+        const mode_field = document.getElementById("mode");
+        const date_field = document.getElementById("date");
+
+        function clearFields(){
+            amount_field.value = "";
+            description_field.value = "";
+            category_field.value = "";
+            type_field.value = "";
+            mode_field.value = "";
+            date_field.value = "";
+        }
+
+        document.getElementById('recordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const amount = amount_field.value;
+            const description = description_field.value
+            const category = category_field.value
+            const type = type_field.value
+            const mode = mode_field.value
+            const date = date_field.value
+            
+            const token_response = await fetch('/api/transactions/', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${accessToken}`},
+                body: JSON.stringify({ 
+                    amount: amount,
+                    description: description,
+                    category: category,
+                    type: type,
+                    payment_mode: mode,
+                    date: date })
+            	});
+
+            if (token_response.ok) {
+                
+                 let data = await token_response.json();
+                 window.confirm(data.amount +" recorded for "+data.description);
+                 clearFields();
+                
+            }
+        });
+    </script>
+</body>
+</html>

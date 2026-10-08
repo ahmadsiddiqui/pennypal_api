@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard</title></head>
+<body>
+    <h2>Your Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+    <a href="/record_transaction/"><button>Record Transaction</button></a>
+    <h3>Transactions</h3>
+    <ul id="transaction-list"></ul>
+
+<script>
+        // Helper function to read a specific cookie by name
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 1. Check if user is authenticated
+        const accessToken = getCookie('access_token');
+        console.log(accessToken);
+
+        if (!accessToken) {
+            // window.location.href = '/login/';
+            console.log(accessToken);
+        }
+
+        // 2. Fetch secure data using the JWT
+        async function fetchTransactions() {
+            const response = await fetch('/api/transactions/', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const transactions = await response.json();
+                const list = document.getElementById('transaction-list');
+                transactions.forEach(trans => {
+                    let li = document.createElement('li');
+                    li.textContent = `${trans.transaction_id} - ${trans.description} - ${trans.amount}`;
+                    list.appendChild(li);
+                });
+            } else if (response.status === 401) {
+                logout();
+            }
+        }
+
+        // 3. Logout function clears the cookies by expiring them immediately
+        function logout() {
+            document.cookie = "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict;";
+            document.cookie = "refresh_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict;";
+            window.location.href = '/login/';
+        }
+
+        fetchTransactions();
+    </script>
+    </body>
+    </html>

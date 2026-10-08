@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.utils.translation import gettext_lazy as _
 
 class UserManager(BaseUserManager):
     def create_user(self, email, full_name, password=None, **extra_fields):
@@ -52,9 +53,20 @@ class Category(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.category_name
+        return self.name
 
 class Transaction(models.Model):
+
+    class PaymentModes(models.TextChoices):
+        CASH = "CS", _("Cash")
+        CARD = "CD", _("Card")
+        CHECK = "CK", _("Check")
+        ETRANSFER = "ET", _("E-Transfer")
+
+    class TransactionTypes(models.TextChoices):
+        EXPENSE = "EX", _("Expense")
+        INCOME = "IN", _("Income")
+
     transaction_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     type = models.CharField(max_length=50) # e.g., income, expense
@@ -62,7 +74,7 @@ class Transaction(models.Model):
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)
     date = models.DateField()
-    payment_mode = models.CharField(max_length=50)
+    payment_mode = models.CharField(max_length=50, choices = PaymentModes)
     receipt_image_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

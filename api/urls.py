@@ -27,4 +27,5 @@ urlpatterns = [
     path('jwt/register/', UserRegistrationView.as_view(), name='register'),
 
     path('', include(router.urls)),
+    
 ]

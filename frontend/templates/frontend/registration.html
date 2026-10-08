@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head><title>Register</title></head>
+<body>
+    <h2> PennyPaRegisterl</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required autofocus><br><br>
+        <input type="password" id="password" placeholder="Password" required><br><br>
+        <input type="password" id="password_confirm" placeholder="Confirm Password" required><br><br>
+        <input type="text" id="fullname" placeholder="Full Name" required><br><br>
+        <input type="text" id="role" placeholder="Role" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <p id="error-msg" style="color:red;"></p>
+
+    <script>
+
+        const email_field = document.getElementById('email');
+        const fullname_field = document.getElementById('fullname');
+        const role_field = document.getElementById('role');
+        const password_field = document.getElementById('password');
+        const password_confirm_field = document.getElementById('password_confirm');
+
+        // ***---DEVELOPMENT---***
+        function trlgen() {
+            const alphabet = 'abcdefghijklmnopqrstuvwxyz';
+            let result = '';
+            for (let i = 0; i < 3; i++) {
+                const randomIndex = Math.floor(Math.random() * alphabet.length);
+                result += alphabet[randomIndex];
+            }
+            return result;
+        }
+         
+            const trl=trlgen();
+            email_field.value = trl +"@"+trl+"."+trl;
+            fullname_field.value = trl;
+            role_field.value = trl;
+            password_field.value = trl;
+            password_confirm_field.value=trl;
+        // ***---END_DEVELOPMENT---***
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+
+            const email_field = document.getElementById('email');
+            const fullname_field = document.getElementById('fullname');
+            const role_field = document.getElementById('role');
+            const password_field = document.getElementById('password');
+            const password_confirm_field = document.getElementById('password_confirm');
+           
+            
+            const email = email_field.value;
+            const fullname = fullname_field.value;
+            const role = role_field.value;
+            const password = password_field.value;
+            const password_confirm = password_confirm_field.value;
+
+            if(password != password_confirm){
+                document.getElementById('error-msg').innerText = "Passwords do not match!"
+                email_field.value="";
+                password_field.value="";
+                password_confirm_field.value="";
+
+            }
+
+            const register_response = await fetch('/api/jwt/register/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password, full_name: fullname, role: role })
+            });
+
+            let data = await register_response.json();
+
+            if (register_response.ok) {
+                const token_response = await fetch('/api/jwt/token/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password,})
+            });
+                data = await token_response.json()
+
+                // Save tokens locally so the browser remembers the user is logged in
+                document.cookie = `access_token=${data.access}; path=/;`;
+                document.cookie = `refresh_token=${data.refresh}; path=/;`;
+                window.location.href = '/dashboard/';
+            } else {
+                document.getElementById('error-msg').innerText = "Login failed. Check credentials.";
+                
+            }
+        });
+    </script>
+</body>
+</html>

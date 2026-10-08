@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head><title>Login</title></head>
+<body>
+    <h2> Login</h2>
+    <form id="loginForm">
+        <input type="email" id="email" placeholder="Email" required autofocus><br><br>
+        <input type="password" id="password" placeholder="Password" required><br><br>
+        <button type="submit">Login</button>
+    </form>
+    <p id="error-msg" style="color:red;"></p>
+
+    <script>
+
+        const email_field = document.getElementById('email');
+
+        const password_field = document.getElementById('password');
+
+ 
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+
+            const email_field = document.getElementById('email');
+            const password_field = document.getElementById('password');
+            
+            const email = email_field.value;
+            const password = password_field.value;
+
+            const token_response = await fetch('/api/jwt/token/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, password: password,})
+            	});
+
+           
+
+            if (token_response.ok) {
+                
+                 let data = await token_response.json();
+
+                // Save tokens locally so the browser remembers the user is logged in
+                document.cookie = `access_token=${data.access}; path=/;`;
+                document.cookie = `refresh_token=${data.refresh}; path=/;`;
+                window.location.href = '/dashboard/';
+            } else {
+                document.getElementById('error-msg').innerText = "Login failed. Check credentials.";
+                
+            }
+        });
+    </script>
+</body>
+</html>

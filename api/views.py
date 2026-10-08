@@ -50,6 +50,20 @@ class TransactionViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     serializer_class = TransactionSerializer #[cite: 3]
     permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        category = serializer.validated_data.get('category')
+        user = self.request.user
+        
+        print("--- DATABASE EXISTENCE CHECK ---")
+        # Check if the Category strictly exists in the DB
+        cat_exists = category.__class__.objects.filter(pk=category.pk).exists()
+        print(f"Category {category.pk} exists in DB: {cat_exists}")
+        
+        # Check if the User strictly exists in the DB
+        user_exists = User.objects.filter(pk=user.pk).exists()
+        print(f"User {user.pk} exists in DB: {user_exists}")
+        
+        serializer.save(user=user)
 
     def get_queryset(self):
         return Transaction.objects.filter(user=self.request.user)
